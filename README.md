@@ -29,6 +29,8 @@ Run `npm install`
 
 ## Configuration
 
+Setup the following as environment variables before you run hubot.
+
 ```
 HUBOT_TRELLO_KEY    - Trello application key
 HUBOT_TRELLO_TOKEN  - Trello API token
@@ -51,14 +53,14 @@ Hubot> Yep, ok, I moved that card to doing.
 user1> hubot trello list "to do"
 Hubot> user1: Looking up the cards for to do, one sec...
 Hubot> user1: Here are all the cards in To Do
-Hubt> * [<shortLink>] <card_name> - <card_url>
-Hubt> * [<shortLink>] <card_name> - <card_url>
-Hubt> * [<shortLink>] <card_name> - <card_url>
+Hubot> * [<shortLink>] <card_name> - <card_url>
+Hubot> * [<shortLink>] <card_name> - <card_url>
+Hubot> * [<shortLink>] <card_name> - <card_url>
 user1> hubot trello list lists
-Hubt> user1: Here are all the lists on your board.
-Hubt> * to do
-Hubt> * doing
-Hubt> * done
+Hubot> user1: Here are all the lists on your board.
+Hubot> * to do
+Hubot> * doing
+Hubot> * done
 ```
 
 And you can use a little help command.
