@@ -108,7 +108,7 @@ module.exports = (robot) ->
         members[member.fullName.toLowerCase().split " ", 1] = member
 
 
-  robot.respond /trello new ["']([^]+)["'](.*)/i, (msg) ->
+  robot.respond /trello new ["“'‘]([^]+)["”'’](.*)/i, (msg) ->
     ensureConfig msg.send
     card_name = msg.match[2]
     list_name = msg.match[1]
@@ -124,16 +124,16 @@ module.exports = (robot) ->
 
     createCard msg, list_name, card_name
 
-  robot.respond /trello list ["'](.+)["']/i, (msg) ->
+  robot.respond /trello list ["“'‘](.+)["”'’]/i, (msg) ->
     showCards msg, msg.match[1]
 
-  robot.respond /trello move (\w+) ["'](.+)["']/i, (msg) ->
+  robot.respond /trello move (\w+) ["“'‘](.+)["”'’]/i, (msg) ->
     moveCard msg, msg.match[1], msg.match[2]
 
-  robot.respond /trello comment (\w+) ["']((.+|\n)+)["']/i, (msg) ->
+  robot.respond /trello comment (\w+) ["“'‘]((.+|\n)+)["”'’]/i, (msg) ->
     addComment msg, msg.match[1], msg.match[2], msg.message.user.name
 
-  robot.respond /trello description (\w+) ["']((.+|\n)+)["']/i, (msg) ->
+  robot.respond /trello description (\w+) ["“'‘]((.+|\n)+)["”'’]/i, (msg) ->
     addDescription msg, msg.match[1], msg.match[2]
 
   robot.respond /trello list lists/i, (msg) ->
