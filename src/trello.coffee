@@ -13,6 +13,9 @@
 #   hubot trello new "<list>" <name> - Create a new Trello card in the list
 #   hubot trello list "<list>" - Show cards on list
 #   hubot trello move <shortLink> "<list>" - Move a card to a different list
+#   hubot trello add member <shortlink> "<first name of member>"
+#   hubot trello add comment <shortlink> "<comment>"
+#   hubot trello description <shortlink> "<discription>"
 #
 #
 # Author:
