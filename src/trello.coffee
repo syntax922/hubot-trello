@@ -75,7 +75,7 @@ module.exports = (robot) ->
       for list in data
         lists[list.name.toLowerCase()] = list
 
-  robot.respond /trello new ["'](.+)["']\s(.*)/i, (msg) ->
+  robot.respond /trello new ["“'‘](.+)["”'’]\s(.*)/i, (msg) ->
     ensureConfig msg.send
     card_name = msg.match[2]
     list_name = msg.match[1]
@@ -91,10 +91,10 @@ module.exports = (robot) ->
 
     createCard msg, list_name, card_name
 
-  robot.respond /trello list ["'](.+)["']/i, (msg) ->
+  robot.respond /trello list ["“'‘](.+)["”'’]/i, (msg) ->
     showCards msg, msg.match[1]
 
-  robot.respond /trello move (\w+) ["'](.+)["']/i, (msg) ->
+  robot.respond /trello move (\w+) ["“'‘](.+)["”'’]/i, (msg) ->
     moveCard msg, msg.match[1], msg.match[2]
 
   robot.respond /trello list lists/i, (msg) ->
