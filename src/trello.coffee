@@ -77,6 +77,20 @@ addMember = (msg, card_id, member_name) ->
        msg.reply "Sorry captain, I couldn't add that member" if err
        msg.reply "Success! #{member_name} was added" unless err
 
+getMemberCards = (msg, member_name) ->
+  if (members[member_name.toLowerCase()]?)
+     id = members[member_name.toLowerCase()].username
+  msg.send "Unable to find person named: #{user_name}" unless id?
+  if id?
+    trello.get "/1/search", {query: "@"+id, idBoards: board.id, modelTypes:cards, card_fields: name,shortLink,url}, (err, data) ->
+      msg.reply "So sorry, I got an error and cannot give you that information" if err
+      msg.reply "I got the following cards for you" unless err
+      msg.send board.id
+      msg.send id
+      for cards in data.cards
+        msg.send " * " + cards.name+ " | " + cards.url
+
+
 moveCard = (msg, card_id, list_name) ->
   ensureConfig msg.send
   id = lists[list_name.toLowerCase()].id
@@ -111,11 +125,7 @@ module.exports = (robot) ->
         members[member.fullName.toLowerCase().split " ", 1] = member
 
 
-<<<<<<< HEAD
-  robot.respond /trello new ["“'‘]([^]+)["”'’](.*)/i, (msg) ->
-=======
-  robot.respond /trello new ["“'‘](.+)["”'’]\s(.*)/i, (msg) ->
->>>>>>> refs/remotes/hubot-scripts/master
+  robot.respond /trello new [""'‘](.+)["”'’]\s(.*)/i, (msg) ->
     ensureConfig msg.send
     card_name = msg.match[2]
     list_name = msg.match[1]
@@ -143,6 +153,9 @@ module.exports = (robot) ->
   robot.respond /trello description (\w+) ["“'‘]((.+|\n)+)["”'’]/i, (msg) ->
     addDescription msg, msg.match[1], msg.match[2]
 
+  robot.respond /trello get (\w+)['’]s cards/i, (msg) ->
+    getMemberCards msg, msg.match[1]
+
   robot.respond /trello list lists/i, (msg) ->
     msg.reply "Here are all the lists on your board."
     Object.keys(lists).forEach (key) ->
@@ -151,7 +164,7 @@ module.exports = (robot) ->
   robot.respond /trello list members/i, (msg) ->
     msg.reply "Here are all the members of the board"
     Object.keys(members).forEach (member)->
-      msg.send " * " + member
+  msg.send " * " + member
 
   robot.respond /trello list member id (\w+)/i, (msg) ->
     msg.reply "The member id for "+ msg.match[1]+" is: "
