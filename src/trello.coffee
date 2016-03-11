@@ -111,11 +111,7 @@ module.exports = (robot) ->
         members[member.fullName.toLowerCase().split " ", 1] = member
 
 
-<<<<<<< HEAD
-  robot.respond /trello new ["“'‘]([^]+)["”'’](.*)/i, (msg) ->
-=======
   robot.respond /trello new ["“'‘](.+)["”'’]\s(.*)/i, (msg) ->
->>>>>>> refs/remotes/hubot-scripts/master
     ensureConfig msg.send
     card_name = msg.match[2]
     list_name = msg.match[1]
