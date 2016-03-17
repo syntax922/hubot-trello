@@ -16,6 +16,8 @@
 #   hubot trello add member <shortlink> "<first name of member>"
 #   hubot trello add comment <shortlink> "<comment>"
 #   hubot trello description <shortlink> "<discription>"
+#   hubot trello search "<criteria>"
+#   hubot trello get <name>'s cards
 #
 #
 # Author:
@@ -82,13 +84,22 @@ getMemberCards = (msg, member_name) ->
      id = members[member_name.toLowerCase()].username
   msg.send "Unable to find person named: #{user_name}" unless id?
   if id?
-    trello.get "/1/search", {query: "@"+id, idBoards: board.id, modelTypes:cards, card_fields: name,shortLink,url}, (err, data) ->
+    trello.get "/1/search", {query: "@"+id, idBoards: board.id, modelTypes: "cards", card_fields: "name,shortLink,url"}, (err, data) ->
       msg.reply "So sorry, I got an error and cannot give you that information" if err
       msg.reply "I got the following cards for you" unless err
       msg.send board.id
       msg.send id
       for cards in data.cards
         msg.send " * " + cards.name+ " | " + cards.url
+        
+search = (msg, search) ->
+  if (search?)
+    msg.reply "I'm searching for results now"
+    trello.get "/1/search", {query: search, idBoards: board.id, modelTypes:"cards", card_fields: "name,shortLink,url"}, (err, data) ->
+      msg.reply "Sorry, I was unable to search at this time. Please try again later." if err
+      msg.reply "The following cards match your criteria" unless err
+      for cards in data.cards
+         msg.send " * " + cards.name + " | " + cards.url
 
 
 moveCard = (msg, card_id, list_name) ->
@@ -155,6 +166,9 @@ module.exports = (robot) ->
 
   robot.respond /trello get (\w+)['’]s cards/i, (msg) ->
     getMemberCards msg, msg.match[1]
+    
+  robot.respond /trello search ["“'‘]((.+|\n)+)["”'’]/i, (msg) ->
+     search msg, msg.match[1]
 
   robot.respond /trello list lists/i, (msg) ->
     msg.reply "Here are all the lists on your board."
@@ -181,6 +195,8 @@ module.exports = (robot) ->
     msg.send " *  trello move <card.shortlink> \"<ListName>\""
     msg.send " *  trello list lists"
     msg.send " *  trello list member id <name>"
+    msg.send " *  trello get <first name>'s cards"
     msg.send " *  trello add member <card.shortLink> <Name>"
     msg.send " *  trello comment <card.shortLink> <Comment>"
     msg.send " *  trello description <card.shortLink> <Description>"
+    msg.send " *  trello search <criteria>"
