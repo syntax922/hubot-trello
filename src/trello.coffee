@@ -68,7 +68,7 @@ getMemberId = (msg, member_name) ->
      id = members[member_name.toLowerCase()].id
   msg.send "Unable to find person named: #{member_name}" unless id?
   if id?
-     msg.send " * " + id
+     msg.send " * #{id}"
 
 addMember = (msg, card_id, member_name) ->
   if (members[member_name.toLowerCase()]?)
@@ -90,7 +90,7 @@ getMemberCards = (msg, member_name) ->
       msg.send board.id
       msg.send id
       for cards in data.cards
-        msg.send " * " + cards.name+ " | " + cards.url
+        msg.send " * #{cards.name} | #{cards.url}"
         
 search = (msg, search) ->
   if (search?)
@@ -99,7 +99,7 @@ search = (msg, search) ->
       msg.reply "Sorry, I was unable to search at this time. Please try again later." if err
       msg.reply "The following cards match your criteria" unless err
       for cards in data.cards
-         msg.send " * " + cards.name + " | " + cards.url
+         msg.send " * #{cards.name} | #{cards.url}"
 
 
 moveCard = (msg, card_id, list_name) ->
@@ -114,14 +114,14 @@ moveCard = (msg, card_id, list_name) ->
 addDescription = (msg, card_id, desc) ->
   ensureConfig msg.send
   trello.put "/1/cards/#{card_id}/desc", {value: desc}, (err, data) ->
-      msg.reply "Sorry boss, I couldn't update that card after all." if err
-      msg.reply "Yep, ok, I updated that card for you." unless err
+    msg.reply "Sorry boss, I couldn't update that card after all." if err
+    msg.reply "Yep, ok, I updated that card for you." unless err
 
 addComment = (msg,card_id, comment, usr) ->
   ensureConfig msg.send
   trello.post "/1/cards/#{card_id}/actions/comments",{text: usr+" commented via Slack:"+comment}, (err, data) ->
-      msg.reply "Sorry, I was unable to do that." if err
-      msg.reply "Gladly! That comment has been added" unless err
+    msg.reply "Sorry, I was unable to do that." if err
+    msg.reply "Gladly! That comment has been added" unless err
 
 module.exports = (robot) ->
   # fetch our board data when the script is loaded
@@ -173,15 +173,15 @@ module.exports = (robot) ->
   robot.respond /trello list lists/i, (msg) ->
     msg.reply "Here are all the lists on your board."
     Object.keys(lists).forEach (key) ->
-      msg.send " * " + key
+      msg.send " * #{key}"
 
   robot.respond /trello list members/i, (msg) ->
     msg.reply "Here are all the members of the board"
     Object.keys(members).forEach (member)->
-  msg.send " * " + member
+    msg.send " * #{member}"
 
   robot.respond /trello list member id (\w+)/i, (msg) ->
-    msg.reply "The member id for "+ msg.match[1]+" is: "
+    msg.reply "The member id for #{msg.match[1]} is: "
     getMemberId msg, msg.match[1]
 
   robot.respond /trello add member (\w+) (\w+)/i, (msg) ->
