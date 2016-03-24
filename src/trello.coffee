@@ -136,7 +136,7 @@ module.exports = (robot) ->
         members[member.fullName.toLowerCase().split " ", 1] = member
 
 
-  robot.respond /trello new [""'‘](.+)["”'’]\s(.*)/i, (msg) ->
+  robot.respond /trello new ["“'‘](.+)["”'’]\s(.*)/i, (msg) ->
     ensureConfig msg.send
     card_name = msg.match[2]
     list_name = msg.match[1]
