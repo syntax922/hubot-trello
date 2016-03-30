@@ -18,7 +18,7 @@
 #   hubot trello description <shortlink> "<discription>"
 #   hubot trello search "<criteria>"
 #   hubot trello get <name>'s cards
-#
+#   hubot trello create list "<name>" (optional: top' or bottom)
 #
 # Author:
 #   jared barboza <jared.m.barboza@gmail.com>
@@ -101,12 +101,12 @@ search = (msg, search) ->
       for cards in data.cards
          msg.send " * #{cards.name} | #{cards.url}"
          
-createList = (msg, list_name, postion = top) ->
+createList = (msg, list_name, position = "top") ->
   msg.reply "I'll get right on that!"
   if position is "top" or position is "bottom" or position > 0
-    trello.post "/1/lists", {name: list_name, idBoard: board.id} (err, data) ->
-    msg.reply "I'm sorry I was unable to add that list. Please try again later." if err
-    msg.reply "That list has been created and be viewed here: #{data.url}" unless err
+    trello.post "/1/lists", {name: list_name, idBoard: board.id, pos:position}, (err, data) ->
+      msg.reply "I'm sorry I was unable to add that list. Please try again later." if err
+      msg.reply "That list has been created and be viewed here: #{board.url}" unless err
   else msg.reply "I'm sorry I can't create a list in that position"
 
 
@@ -195,7 +195,7 @@ module.exports = (robot) ->
   robot.respond /trello add member (\w+) (\w+)/i, (msg) ->
     addMember msg, msg.match[1], msg.match[2]
     
-  robot.respond /^trello create list ["“'‘]((.+|\n)+)["”'’] (.+)?$/i, (msg) ->
+  robot.respond /trello create list ["“'‘]((.+|\n)+)["”'’] ?(.+)?$/i, (msg) ->
     createList msg, msg.match[1], msg.match[3]
 
   robot.respond /trello help/i, (msg) ->
@@ -211,3 +211,4 @@ module.exports = (robot) ->
     msg.send " *  trello comment <card.shortLink> <Comment>"
     msg.send " *  trello description <card.shortLink> <Description>"
     msg.send " *  trello search <criteria>"
+    msg.send " *  trello create list \"<name>\" (optional:top or bottom)"
