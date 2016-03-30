@@ -84,7 +84,7 @@ getMemberCards = (msg, member_name) ->
      id = members[member_name.toLowerCase()].username
   msg.send "Unable to find person named: #{user_name}" unless id?
   if id?
-    trello.get "/1/search", {query: "@"+id, idBoards: board.id, modelTypes: "cards", card_fields: "name,shortLink,url"}, (err, data) ->
+    trello.get "/1/search", {query: "@#{id}", idBoards: board.id, modelTypes: "cards", card_fields: "name,shortLink,url"}, (err, data) ->
       msg.reply "So sorry, I got an error and cannot give you that information" if err
       msg.reply "I got the following cards for you" unless err
       msg.send board.id
@@ -95,11 +95,21 @@ getMemberCards = (msg, member_name) ->
 search = (msg, search) ->
   if (search?)
     msg.reply "I'm searching for results now"
-    trello.get "/1/search", {query: search, idBoards: board.id, modelTypes:"cards", card_fields: "name,shortLink,url"}, (err, data) ->
+    trello.get "/1/search", {query: "is:open #{search}",idBoards: board.id, modelTypes:"cards", card_fields: "name,shortLink,url"}, (err, data) ->
       msg.reply "Sorry, I was unable to search at this time. Please try again later." if err
       msg.reply "The following cards match your criteria" unless err
       for cards in data.cards
          msg.send " * #{cards.name} | #{cards.url}"
+
+searchExtended = (msg,search) ->
+  if (search?)
+    msg.reply "I'm searching for results now"
+    trello.get "/1/search", {query: search,idBoards: board.id, modelTypes:"cards", card_fields: "name,shortLink,url"}, (err, data) ->
+      msg.reply "Sorry, I was unable to search at this time. Please try again later." if err
+      msg.reply "The following cards match your criteria" unless err
+      for cards in data.cards
+         msg.send " * #{cards.name} | #{cards.url} | #{cards.shortLink}"
+
          
 createList = (msg, list_name, position = "top") ->
   msg.reply "I'll get right on that!"
@@ -118,6 +128,28 @@ moveCard = (msg, card_id, list_name) ->
     trello.put "/1/cards/#{card_id}/idList", {value: id}, (err, data) ->
       msg.reply "Sorry boss, I couldn't move that card after all." if err
       msg.reply "Yep, ok, I moved that card to #{list_name}." unless err
+
+relateCards = (msg, card_list) ->
+  msg.send card_list
+  cards = card_list.replace(/\s|\n/g, "").split(",")
+  desc = '\n **Related Cards**\n-------\n------\n'
+  desc = "#{desc} https://trello.com/c/#{items}\n" for items in cards
+  for related in cards
+    trello.get "/1/cards/#{related}", (err,data) ->
+     # msg.send "description for #{data.shortUrl} is #{data.desc}"
+        trello.put "/1/cards/#{data.id}/desc", {value: "#{data.desc}#{desc}"}, (err, data) -> 
+          msg.send "I'm sorry I was unable to update card #{related}" if err
+          msg.send "updated card #{data.shortUrl}"
+  msg.send "I've successfully updated the cards"
+
+relateTheme = (msg, theme) ->
+  msg.reply "Gathering cards for #{theme}"
+  trello.get "/1/search", {query: "is:open #{theme}",idBoards: board.id, modelTypes:"cards", card_fields: "name,shortLink,url"}, (err, data) -> 
+    cardList = ''
+    cardList = "#{cardList}#{card.shortLink}," for card in data.cards unless err
+    msg.send "Error occured" if err
+    #msg.send "Card list is #{cardList}"
+    relateCards msg, cardList.slice(0,-1)
 
 addDescription = (msg, card_id, desc) ->
   ensureConfig msg.send
@@ -178,6 +210,9 @@ module.exports = (robot) ->
   robot.respond /trello search ["“'‘]((.+|\n)+)["”'’]/i, (msg) ->
      search msg, msg.match[1]
 
+  robot.respond /trello extended search ["“'‘]((.+|\n)+)["”'’]/i, (msg) ->
+     searchExtended msg, msg.match[1]
+
   robot.respond /trello list lists/i, (msg) ->
     msg.reply "Here are all the lists on your board."
     Object.keys(lists).forEach (key) ->
@@ -185,8 +220,8 @@ module.exports = (robot) ->
 
   robot.respond /trello list members/i, (msg) ->
     msg.reply "Here are all the members of the board"
-    Object.keys(members).forEach (member)->
-    msg.send " * #{member}"
+    Object.keys(members).forEach (key)->
+    msg.send " * #{key}"
 
   robot.respond /trello list member id (\w+)/i, (msg) ->
     msg.reply "The member id for #{msg.match[1]} is: "
@@ -197,7 +232,14 @@ module.exports = (robot) ->
     
   robot.respond /trello create list ["“'‘]((.+|\n)+)["”'’] ?(.+)?$/i, (msg) ->
     createList msg, msg.match[1], msg.match[3]
-
+  
+  robot.respond /trello relate cards ((.+|\n+)+)/i, (msg) ->
+    msg.reply "Attempting to relate cards"
+    relateCards msg, msg.match[1]
+ 
+  robot.respond /trello relate theme ["“'‘]((.+|\n)+)["”'’]/i, (msg) ->
+    relateTheme msg, msg.match[1]
+ 
   robot.respond /trello help/i, (msg) ->
     msg.reply "Here are all the commands for me."
     msg.send " *  trello new \"<ListName>\" <TaskName>"
