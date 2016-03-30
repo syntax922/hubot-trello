@@ -100,6 +100,14 @@ search = (msg, search) ->
       msg.reply "The following cards match your criteria" unless err
       for cards in data.cards
          msg.send " * #{cards.name} | #{cards.url}"
+         
+createList = (msg, list_name, postion = top) ->
+  msg.reply "I'll get right on that!"
+  if position is "top" or position is "bottom" or position > 0
+    trello.post "/1/lists", {name: list_name, idBoard: board.id} (err, data) ->
+    msg.reply "I'm sorry I was unable to add that list. Please try again later." if err
+    msg.reply "That list has been created and be viewed here: #{data.url}" unless err
+  else msg.reply "I'm sorry I can't create a list in that position"
 
 
 moveCard = (msg, card_id, list_name) ->
@@ -186,6 +194,9 @@ module.exports = (robot) ->
 
   robot.respond /trello add member (\w+) (\w+)/i, (msg) ->
     addMember msg, msg.match[1], msg.match[2]
+    
+  robot.respond /^trello create list ["“'‘]((.+|\n)+)["”'’] (.+)?$/i, (msg) ->
+    createList msg, msg.match[1], msg.match[3]
 
   robot.respond /trello help/i, (msg) ->
     msg.reply "Here are all the commands for me."
