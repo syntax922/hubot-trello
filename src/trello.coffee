@@ -19,7 +19,8 @@
 #   hubot trello search "<criteria>"
 #   hubot trello get <name>'s cards
 #   hubot trello create list "<name>" (optional: top' or bottom)
-#
+#   hubot trello relate <comma dilimited shortlink>
+#   hubot trello relate theme "<theme>"
 # Author:
 #   jared barboza <jared.m.barboza@gmail.com>
 
@@ -254,3 +255,6 @@ module.exports = (robot) ->
     msg.send " *  trello description <card.shortLink> <Description>"
     msg.send " *  trello search <criteria>"
     msg.send " *  trello create list \"<name>\" (optional:top or bottom)"
+    msg.send " * trello relate <comma dilimited shortlink>"
+    msg.send " *t trello relate theme \"<theme>\""
+
