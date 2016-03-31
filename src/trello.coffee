@@ -13,14 +13,15 @@
 #   hubot trello new "<list>" <name> - Create a new Trello card in the list
 #   hubot trello list "<list>" - Show cards on list
 #   hubot trello move <shortLink> "<list>" - Move a card to a different list
-#   hubot trello add member <shortlink> "<first name of member>"
-#   hubot trello add comment <shortlink> "<comment>"
-#   hubot trello description <shortlink> "<discription>"
-#   hubot trello search "<criteria>"
-#   hubot trello get <name>'s cards
-#   hubot trello create list "<name>" (optional: top' or bottom)
-#   hubot trello relate <comma dilimited shortlink>
-#   hubot trello relate theme "<theme>"
+#   hubot trello add member <shortlink> "<first name of member>" - Add member to card
+#   hubot trello add comment <shortlink> "<comment>" - Adds comment to card
+#   hubot trello description <shortlink> "<discription>" - Changes description of card
+#   hubot trello search "<criteria>" - Does a search on current board for open cards
+#   hubot trello search extended "<criteria>" Searches card on current board
+#   hubot trello get <name>'s cards - Get's user's cards (use first name only)
+#   hubot trello create list "<name>" (optional: top' or bottom) - Create new list
+#   hubot trello relate <comma dilimited shortlink> - Create Related cards section and relate
+#   hubot trello relate theme "<theme>" - Create Related Cards sections for cards with <theme> in title
 # Author:
 #   jared barboza <jared.m.barboza@gmail.com>
 
@@ -254,7 +255,7 @@ module.exports = (robot) ->
     msg.send " *  trello comment <card.shortLink> <Comment>"
     msg.send " *  trello description <card.shortLink> <Description>"
     msg.send " *  trello search <criteria>"
+    msg.send " *  trello search extended <criteria>"
     msg.send " *  trello create list \"<name>\" (optional:top or bottom)"
-    msg.send " * trello relate <comma dilimited shortlink>"
-    msg.send " *t trello relate theme \"<theme>\""
-
+    msg.send " *  trello relate <comma dilimited shortlink>"
+    msg.send " *  trello relate theme \"<theme>\""
