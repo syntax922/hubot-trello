@@ -13,15 +13,13 @@
 #   hubot trello new "<list>" <name> - Create a new Trello card in the list
 #   hubot trello list "<list>" - Show cards on list
 #   hubot trello move <shortLink> "<list>" - Move a card to a different list
-#   hubot trello add member <shortlink> "<first name of member>" - Add member to card
-#   hubot trello add comment <shortlink> "<comment>" - Adds comment to card
-#   hubot trello description <shortlink> "<discription>" - Changes description of card
-#   hubot trello search "<criteria>" - Does a search on current board for open cards
-#   hubot trello search extended "<criteria>" Searches card on current board
-#   hubot trello get <name>'s cards - Get's user's cards (use first name only)
-#   hubot trello create list "<name>" (optional: top' or bottom) - Create new list
-#   hubot trello relate <comma dilimited shortlink> - Create Related cards section and relate
-#   hubot trello relate theme "<theme>" - Create Related Cards sections for cards with <theme> in title
+#   hubot trello add member <shortlink> "<first name of member>"
+#   hubot trello add comment <shortlink> "<comment>"
+#   hubot trello description <shortlink> "<discription>"
+#   hubot trello search "<criteria>"
+#   hubot trello get <name>'s cards
+#   hubot trello create list "<name>" (optional: top' or bottom)
+#
 # Author:
 #   jared barboza <jared.m.barboza@gmail.com>
 
@@ -146,7 +144,7 @@ relateCards = (msg, card_list) ->
 
 relateTheme = (msg, theme) ->
   msg.reply "Gathering cards for #{theme}"
-  trello.get "/1/search", {query: "is:open name:\"#{theme}\"",idBoards: board.id, modelTypes:"cards", card_fields: "name,shortLink,url"}, (err, data) -> 
+  trello.get "/1/search", {query: "is:open name:#{theme}",idBoards: board.id, modelTypes:"cards", card_fields: "name,shortLink,url"}, (err, data) -> 
     cardList = ''
     cardList = "#{cardList}#{card.shortLink}," for card in data.cards unless err
     msg.send "Error occured" if err
@@ -164,6 +162,7 @@ addComment = (msg,card_id, comment, usr) ->
   trello.post "/1/cards/#{card_id}/actions/comments",{text: usr+" commented via Slack:"+comment}, (err, data) ->
     msg.reply "Sorry, I was unable to do that." if err
     msg.reply "Gladly! That comment has been added" unless err
+
 
 module.exports = (robot) ->
   # fetch our board data when the script is loaded
@@ -255,7 +254,91 @@ module.exports = (robot) ->
     msg.send " *  trello comment <card.shortLink> <Comment>"
     msg.send " *  trello description <card.shortLink> <Description>"
     msg.send " *  trello search <criteria>"
-    msg.send " *  trello search extended <criteria>"
     msg.send " *  trello create list \"<name>\" (optional:top or bottom)"
-    msg.send " *  trello relate <comma dilimited shortlink>"
-    msg.send " *  trello relate theme \"<theme>\""
+
+  robot.router.get "/hello", (req, res) -> 
+    res.end "Hello"
+    robot.messageRoom '#general', 'someone touched me!'
+#  robot.router.post '/hubot/sendmessage/:room', (req, res) ->
+    robot.message
+#    room = if req.params.room.slice(0,1) isnt '#' then "##{req.params.room}" else req.params.room 
+    room = req.params.room
+    data = if req.body.payload? then JSON.parse req.body.payload else req.body 
+    message = data.message
+    robot.messageRoom room, message
+    res.send 'OK'
+#  robot.router.post '/hubot/trello', (req, res) ->
+#    data = if req.body.payload? then JSON.parse req.body.payload else req.body
+#    robot.logger.info data
+#    robot.logger.info "#{Object.keys(data.action.data.action)[0]}"
+#    robot.logger.info "#{data.action.data.action.text}"
+#    robot.logger.info "found action of #{data.action.type} and text of #{data.action.data.text}"
+#    robot.logger.info "action taken on #{data.action.data.card.id}"
+#    res.send 'OK'
+  robot.router.get '/hubot/trello', (req,res) ->
+    robot.logger.info "received get request on trello"
+    res.send 'OK'
+  robot.respond  /brain add user (\w+), ?(\w+), ?(\w+)/i, (msg) ->
+    addUser msg, msg.match[1], msg.match[2], msg.match[3]
+  
+  addUser = (msg, name, trello, slack) ->
+    msg.reply "adding #{name} to my brain"
+    if robot.brain.get('users')? 
+      robot.logger.info "found brain entry"
+      robot.logger.info robot.brain.get('users')
+      current = JSON.parse (robot.brain.get('users').replace(/\'/g,"\""))
+    else current = []
+    add = true
+    for user in current
+      if user.name is name
+        robot.logger.info "User already exists"
+        add = false
+        msg.reply "Someone with that name already exists! I can't add them, sorry."
+        break
+    if add
+      newUser = {name:name, trello:trello, slack:slack}
+      current.push(newUser)
+      brainadd = JSON.stringify(current)
+      brainadd = brainadd.replace(/\"/g,"'")
+      robot.brain.set('users',brainadd)
+      msg.reply "I've added #{name} to my brain!!"
+  robot.router.post '/hubot/trello', (req, res) ->
+    users = JSON.parse (robot.brain.get('users').replace(/\'/g,"\""))
+    data = if req.body.payload? then JSON.parse req.body.payload else req.body
+  #  robot.logger.info data
+  #  robot.logger.info "#{Object.keys(data.action.data.card)[0]}"
+  #  robot.logger.info "#{data.action.data.action.text}"
+  #  for item in data.action.data.card
+  #  robot.logger.info "checking #{data.action.data.card[0]}"
+    robot.logger.info "found action of #{data.action.type} and text of #{data.action.data.text}"
+    robot.logger.info "action taken on #{data.action.data.card.id}"
+    res.send 'OK'
+    if data.action.type is "commentCard" or data.action.type is "updateComment"
+      if data.action.type is "commentCard"
+        comment = data.action.data.text
+      else if data.action.type is "updateComment"
+        comment = data.action.data.action.text
+      for user in users
+        if comment.indexOf(user.trello) > -1
+          robot.messageRoom user.slack, "You were mentioned on card: #{data.action.data.card.name} | https://www.trello.com/c/#{data.action.data.card.shortLink}"
+  robot.respond /brain remove user (\w+)/i, (msg) ->
+    removeUser msg, msg.match[1]
+  removeUser = (msg, name) ->
+    userList = JSON.parse (robot.brain.get('users').replace(/\'/g,"\""))
+    robot.logger.info userList.length
+    index = 0
+    for user in userList
+      if user.name is name
+        robot.logger.info "Identified user"
+        found = true
+        robot.logger.info "index is #{index}"
+        userList.splice(index,1)
+        msg.reply "I've gotten amnesia and forgotten #{name}"
+        updateList = JSON.stringify(userList)
+        updateList = updateList.replace(/\"/g,"'")
+        robot.logger.info updateList
+        robot.brain.set('users',updateList)
+        break
+      index++
+    msg.reply "I'm sorry I don't have knowldege of #{name}" if not found
+
