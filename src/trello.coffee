@@ -133,7 +133,7 @@ moveCard = (msg, card_id, list_name) ->
 relateCards = (msg, card_list) ->
   msg.send card_list
   cards = card_list.replace(/\s|\n/g, "").split(",")
-  desc = '\n **Related Cards**\n-------\n------\n'
+  desc = '\n\n **Related Cards**\n-------\n------\n'
   desc = "#{desc} https://trello.com/c/#{items}\n" for items in cards
   for related in cards
     trello.get "/1/cards/#{related}", (err,data) ->
