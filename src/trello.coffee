@@ -146,7 +146,7 @@ relateCards = (msg, card_list) ->
 
 relateTheme = (msg, theme) ->
   msg.reply "Gathering cards for #{theme}"
-  trello.get "/1/search", {query: "is:open #{theme}",idBoards: board.id, modelTypes:"cards", card_fields: "name,shortLink,url"}, (err, data) -> 
+  trello.get "/1/search", {query: "is:open name:\"#{theme}\"",idBoards: board.id, modelTypes:"cards", card_fields: "name,shortLink,url"}, (err, data) -> 
     cardList = ''
     cardList = "#{cardList}#{card.shortLink}," for card in data.cards unless err
     msg.send "Error occured" if err
