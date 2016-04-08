@@ -121,6 +121,12 @@ createList = (msg, list_name, position = "top") ->
       msg.reply "That list has been created and be viewed here: #{board.url}" unless err
   else msg.reply "I'm sorry I can't create a list in that position"
 
+createChecklist = (msg, card_id) ->
+  msg.reply "Sure thing boss. I'll create that checklist for you."
+  ensureConfig msg.send
+  trello.post "/1/cards/#{card_id}/checklists", (err, data) ->
+      msg.reply "I'm sorry I was unable to add that checklist. Please try again later." if err
+      msg.reply "That checklist has been created on this card" unless err
 
 moveCard = (msg, card_id, list_name) ->
   ensureConfig msg.send
@@ -234,6 +240,9 @@ module.exports = (robot) ->
     
   robot.respond /trello create list ["“'‘]((.+|\n)+)["”'’] ?(.+)?$/i, (msg) ->
     createList msg, msg.match[1], msg.match[3]
+    
+  robot.respond /trello checklist ["'](.+)["']/i, (msg) ->
+    createChecklist msg, msg.match[1]
   
   robot.respond /trello relate cards ((.+|\n+)+)/i, (msg) ->
     msg.reply "Attempting to relate cards"
@@ -257,5 +266,6 @@ module.exports = (robot) ->
     msg.send " *  trello search <criteria>"
     msg.send " *  trello search extended <criteria>"
     msg.send " *  trello create list \"<name>\" (optional:top or bottom)"
-    msg.send " *  trello relate <comma dilimited shortlink>"
+    msg.send " *  trello checklist <comma delimited shortlink>"
+    msg.send " *  trello relate <comma delimited shortlink>"
     msg.send " *  trello relate theme \"<theme>\""
